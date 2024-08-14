@@ -1,9 +1,9 @@
-# BASIC_ALEXA_ASK_SKILL_TEMPLATE
+# Televisio Imperium Skill
 
-This project is a basic template for creating an Alexa skill server using Bottle, ASK SDK, and supporting Gevent for running the server. It also includes environment configuration using dotenv and follows best practices for logging and configuration management.
+*Televisio Imperium Skill* is an Alexa custom skill designed to provide seamless voice control for Sony Bravia televisions. This skill allows users to power on/off their TV, adjust the volume, switch inputs, and navigate through menus using simple voice commands. Optimized for efficiency and ease of use, the skill integrates directly with the Sony Bravia API, ensuring a responsive and reliable experience.
 
 ## Table of Contents
-- [BASIC\_ALEXA\_ASK\_SKILL\_TEMPLATE](#basic_alexa_ask_skill_template)
+- [Televisio Imperium Skill](#televisio-imperium-skill)
   - [Table of Contents](#table-of-contents)
   - [Installation](#installation)
   - [Configuration](#configuration)
@@ -49,8 +49,8 @@ This project is a basic template for creating an Alexa skill server using Bottle
 1. Clone the repository:
 
 ```bash
-git clone https://github.com/kjpou1/BASIC_ALEXA_ASK_SKILL_TEMPLATE.git
-cd BASIC_ALEXA_ASK_SKILL_TEMPLATE
+git clone https://github.com/yourusername/televisio-imperium-skill.git
+cd televisio-imperium-skill
 ```
 
 2. Create a virtual environment and activate it:
@@ -97,8 +97,8 @@ The following environment variables are used to configure the application. These
 ### INTENT
 
 - **Description**: The custom intent to be handled by the skill.
-- **Default Value**: `HelloWorldIntent`
-- **Example**: `INTENT=HelloWorldIntent`
+- **Default Value**: `ControlBraviaIntent`
+- **Example**: `INTENT=ControlBraviaIntent`
 
 ### DEBUG
 
@@ -179,7 +179,6 @@ This will create the following files:
 > [!WARN]  
 >  Permissions are sometimes operating system dependent.  Follow your own permissions strategy.
 
-
 ## Troubleshooting SSL Configuration
 
 If you encounter the following error:
@@ -249,10 +248,11 @@ pip install --force-reinstall -r requirements.txt
 
 ### 2. Use a Different Version of OpenSSL
 
-If upgrading `oscrypto` does not work, try using OpenSSL version 3.1.x or downgrading to an earlier version like 3.0.9.
+If upgrading `oscrypto` does not
+
+ work, try using OpenSSL version 3.1.x or downgrading to an earlier version like 3.0.9.
 
 For more detailed steps and information, visit the [Snowflake Community article](https://community.snowflake.com/s/article/Python-Connector-fails-to-connect-with-LibraryNotFoundError-Error-detecting-the-version-of-libcrypto).
-
 
 If you continue to experience issues, you may need to recompile Python with the correct OpenSSL paths.
 
@@ -296,7 +296,7 @@ class LaunchRequestHandler(AbstractRequestHandler):
 
 **Purpose**: Handles a custom intent specified in the configuration.
 
-**Response**: Responds with a personalized message if the `firstname` slot is provided, otherwise prompts the user to provide their name.
+**Response**: Controls the Sony Bravia TV based on user commands.
 
 ```python
 class CustomIntentHandler(AbstractRequestHandler):
@@ -308,23 +308,12 @@ class CustomIntentHandler(AbstractRequestHandler):
     def handle(self, handler_input):
         logger.info("Handling %s", self.intent)
 
-        # Extract the firstname slot from the request
-        slots = handler_input.request_envelope.request.intent.slots
-        firstname = slots.get("firstname").value if slots.get("firstname") else None
+        # Example control action for Sony Bravia TV
+        control_action = "Power On"
+        logger.info(f"Executing {control_action} on Sony Bravia TV")
 
-        # Render response using the JinjaTemplateRenderer
-        renderer = JinjaTemplateRenderer()
-
-        if firstname is None:
-            # No name given, prompt user to provide their name
-            ask_name_text = renderer.render_string_template("ask_name")
-            return (
-                handler_input.response_builder.speak(ask_name_text)
-                .ask(ask_name_text)  # Keeps the session open to receive further input
-                .response
-            )
-
-        speech_text = renderer.render_string_template("hello", firstname=firstname)
+        # Respond to user
+        speech_text = f"Executing {control_action} on your Sony Bravia TV."
 
         return (
             handler_input.response_builder.speak(speech_text)
@@ -450,7 +439,7 @@ Here is the JSON definition of the interaction model for this skill:
 {
     "interactionModel": {
         "languageModel": {
-            "invocationName": "hello world",
+            "invocationName": "control bravia",
             "intents": [
                 {
                     "name": "AMAZON.CancelIntent",
@@ -465,25 +454,22 @@ Here is the JSON definition of the interaction model for this skill:
                     "samples": []
                 },
                 {
-                    "name": "HelloWorldIntent",
+                    "name": "ControlBraviaIntent",
                     "slots": [
                         {
-                            "name": "firstname",
-                            "type": "AMAZON.FirstName",
+                            "name": "command",
+                            "type": "AMAZON.LITERAL",
                             "samples": [
-                                "{firstname}"
+                                "{command}"
                             ]
                         }
                     ],
                     "samples": [
-                        "say hello to {firstname}",
-                        "{firstname}",
-                        "say hi to {firstname}",
-                        "how are you",
-                        "say hi",
-                        "hi",
-                        "say hello world",
-                        "say hello"
+                        "turn on the TV",
+                        "power off the TV",
+                        "switch to HDMI 1",
+                        "increase volume",
+                        "decrease volume"
                     ]
                 },
                 {
@@ -500,13 +486,13 @@ Here is the JSON definition of the interaction model for this skill:
         "dialog": {
             "intents": [
                 {
-                    "name": "HelloWorldIntent",
+                    "name": "ControlBraviaIntent",
                     "confirmationRequired": false,
                     "prompts": {},
                     "slots": [
                         {
-                            "name": "firstname",
-                            "type": "AMAZON.FirstName",
+                            "name": "command",
+                            "type": "AMAZON.LITERAL",
                             "confirmationRequired": false,
                             "elicitationRequired": true,
                             "prompts": {
@@ -526,15 +512,15 @@ Here is the JSON definition of the interaction model for this skill:
  "variations": [
                     {
                         "type": "PlainText",
-                        "value": "Who should I say hello to?"
+                        "value": "What would you like to do with your TV?"
                     },
                     {
                         "type": "PlainText",
-                        "value": "Tell me who to say hello to"
+                        "value": "Tell me a command for your Sony Bravia TV"
                     },
                     {
                         "type": "PlainText",
-                        "value": "What is your name"
+                        "value": "What command should I execute on your TV?"
                     }
                 ]
             }
@@ -545,13 +531,12 @@ Here is the JSON definition of the interaction model for this skill:
 
 ### Explanation of the Interaction Model
 
-- **Invocation Name**: The name users say to start the skill (e.g., "Alexa, open hello world").
-- **Intents**: The actions that the skill can perform, each represented by an intent. This includes built-in intents like `AMAZON.HelpIntent` and custom intents like `HelloWorldIntent`.
-- **Slots**: Parameters that the intents can accept. In this case, `HelloWorldIntent` has a `firstname` slot of type `AMAZON.FirstName`.
+- **Invocation Name**: The name users say to start the skill (e.g., "Alexa, open control bravia").
+- **Intents**: The actions that the skill can perform, each represented by an intent. This includes built-in intents like `AMAZON.HelpIntent` and custom intents like `ControlBraviaIntent`.
+- **Slots**: Parameters that the intents can accept. In this case, `ControlBraviaIntent` has a `command` slot of type `AMAZON.LITERAL`.
 - **Samples**: Example phrases users can say to invoke each intent. These help Alexa recognize different ways users might phrase their requests.
 - **Dialog**: Defines the dialog management for the intents, including slot elicitation prompts to gather necessary information from the user.
 - **Prompts**: Predefined responses Alexa can use to prompt the user for more information.
-
 
 ## Logging
 
@@ -568,7 +553,3 @@ If you want to contribute to this project, please fork the repository and submit
 ## Contact
 
 For any questions or issues, please open an issue on GitHub.
-
-
-
-
